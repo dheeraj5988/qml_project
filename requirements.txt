@@ -1,1 +1,1 @@
-
+pip install kaggle kagglehub pandas
