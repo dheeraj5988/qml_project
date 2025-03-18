@@ -1,6 +1,9 @@
+import os
 import numpy as np
 import pandas as pd
 import joblib
+import kagglehub
+from kagglehub import KaggleDatasetAdapter
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
@@ -11,10 +14,20 @@ from qiskit import BasicAer
 from qiskit.utils import algorithm_globals
 from qiskit_machine_learning.kernels import QuantumKernel
 from qiskit.circuit.library import ZFeatureMap
-from qiskit.algorithms.optimizers import COBYLA
 
-# Load dataset
-df = pd.read_csv("data/credit_card_fraud.csv")
+# Ensure Kaggle API is configured
+os.environ["KAGGLE_CONFIG_DIR"] = os.path.expanduser("~/.kaggle")
+
+# Load dataset dynamically from Kaggle
+print("📥 Loading dataset from Kaggle...")
+df = kagglehub.load_dataset(
+    KaggleDatasetAdapter.PANDAS,
+    "mlg-ulb/creditcardfraud",
+    "creditcard.csv"
+)
+
+print("✅ Dataset Loaded Successfully!")
+print(df.head())
 
 # Select features and target
 X = df.drop(columns=["Class"])  # Features
@@ -46,6 +59,7 @@ for name, model in models.items():
     joblib.dump(model, f"models/{name}.pkl")
 
 # Quantum Kernel Method (Qiskit)
+print("\n⚛️ Implementing Quantum Kernel Method...")
 feature_map = ZFeatureMap(feature_dimension=X_train.shape[1], reps=2)
 quantum_kernel = QuantumKernel(feature_map=feature_map, quantum_instance=BasicAer.get_backend("statevector_simulator"))
 
@@ -65,4 +79,3 @@ print(classification_report(y_test, y_pred_qsvc))
 joblib.dump(qsvc, "models/QuantumSVM.pkl")
 
 print("\n✅ Training complete! Models saved successfully.")
-
