@@ -10,10 +10,12 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, classification_report
-from qiskit import BasicAer
+from qiskit import Aer
 from qiskit.utils import algorithm_globals
+from qiskit_machine_learning.algorithms import VQC
 from qiskit_machine_learning.kernels import QuantumKernel
-from qiskit.circuit.library import ZFeatureMap
+from qiskit.circuit.library import ZFeatureMap, RealAmplitudes
+from quantum_utils import get_quantum_instance
 
 # Ensure Kaggle API is configured
 os.environ["KAGGLE_CONFIG_DIR"] = os.path.expanduser("~/.kaggle")
@@ -30,8 +32,8 @@ print("✅ Dataset Loaded Successfully!")
 print(df.head())
 
 # Select features and target
-X = df.drop(columns=["Class"])  # Features
-y = df["Class"]  # Target (0 = Normal, 1 = Fraud)
+X = df.drop(columns=["Class"]).values
+y = df["Class"].values
 
 # Split data
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
@@ -58,24 +60,24 @@ for name, model in models.items():
     print(classification_report(y_test, y_pred))
     joblib.dump(model, f"models/{name}.pkl")
 
-# Quantum Kernel Method (Qiskit)
-print("\n⚛️ Implementing Quantum Kernel Method...")
+# Quantum Feature Map and Kernel
+print("\n⚛️ Implementing Quantum Model...")
+
 feature_map = ZFeatureMap(feature_dimension=X_train.shape[1], reps=2)
-quantum_kernel = QuantumKernel(feature_map=feature_map, quantum_instance=BasicAer.get_backend("statevector_simulator"))
+variational_circuit = RealAmplitudes(num_qubits=X_train.shape[1], reps=2)
 
-# Train Quantum Model
-X_train_qk = quantum_kernel.evaluate(x_vec=X_train)
-X_test_qk = quantum_kernel.evaluate(x_vec=X_test)
+quantum_kernel = QuantumKernel(feature_map=feature_map, quantum_instance=get_quantum_instance())
 
-qsvc = SVC(kernel="precomputed")
-qsvc.fit(X_train_qk, y_train)
+# Train Quantum Classifier
+vqc = VQC(quantum_kernel=quantum_kernel, var_form=variational_circuit)
+vqc.fit(X_train, y_train)
 
 # Evaluate Quantum Model
-y_pred_qsvc = qsvc.predict(X_test_qk)
-print("\nQuantum SVM Model Accuracy:", accuracy_score(y_test, y_pred_qsvc))
-print(classification_report(y_test, y_pred_qsvc))
+y_pred_vqc = vqc.predict(X_test)
+print("\nQuantum VQC Model Accuracy:", accuracy_score(y_test, y_pred_vqc))
+print(classification_report(y_test, y_pred_vqc))
 
 # Save the Quantum Model
-joblib.dump(qsvc, "models/QuantumSVM.pkl")
+joblib.dump(vqc, "models/qml_fraud_model.pkl")
 
-print("\n✅ Training complete! Models saved successfully.")
+print("\n✅ Training complete! All models saved successfully.")
