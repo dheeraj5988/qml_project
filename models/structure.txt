@@ -1,0 +1,31 @@
+qml-fraud-detection/
+│── backend/
+│   ├── dataset/
+│   │   ├── creditcard.csv  # (Downloaded dynamically from Kaggle)
+│   ├── models/
+│   │   ├── scaler.pkl  # (StandardScaler for feature normalization)
+│   │   ├── RandomForest.pkl  # (Trained RandomForest model)
+│   │   ├── SVM.pkl  # (Trained SVM model)
+│   │   ├── LogisticRegression.pkl  # (Trained Logistic Regression model)
+│   │   ├── QuantumSVM.pkl  # (Trained Quantum ML Model)
+│   ├── quantum_utils.py  # (Quantum utilities for Qiskit models)
+│   ├── train_model.py  # (Model training script, both classical & quantum)
+│   ├── qml_inference.py  # (Script to load models and make predictions)
+│   ├── api.py  # (Backend API using FastAPI for model inference)
+│   ├── requirements.txt  # (Dependencies)
+│── frontend/
+│   ├── public/  # (Static assets like images, logos, etc.)
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Navbar.js  # (Navigation bar)
+│   │   │   ├── Footer.js  # (Footer)
+│   │   │   ├── TransactionForm.js  # (Form to input transaction details)
+│   │   ├── pages/
+│   │   │   ├── Home.js  # (Landing page)
+│   │   │   ├── Prediction.js  # (Page to display fraud predictions)
+│   │   ├── App.js  # (Main React App file)
+│   │   ├── index.js  # (Entry point for React app)
+│   ├── package.json  # (React dependencies)
+│   ├── tailwind.config.js  # (TailwindCSS config)
+│── .gitignore  # (Ignore unnecessary files)
+│── README.md  # (Project documentation)
